@@ -28,6 +28,7 @@ class DiffusionModule(nn.Module):
         # 1. Sample a timestep and add noise to get (x_t, noise).
         # 2. Pass (x_t, timestep) into self.network, where the output should represent the clean sample x0_pred.
         # 3. Compute the loss as MSE(predicted x0_pred, ground-truth x0).
+        
         ######################
         loss = None
         return loss
