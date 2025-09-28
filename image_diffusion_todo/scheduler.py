@@ -133,15 +133,15 @@ class DDPMScheduler(BaseScheduler):
         # 5. Return the final sample at t-1.
         if isinstance(t, int):
             t = torch.tensor([t]).to(self.device)
-        eps_factor = (1 - extract(self.var_scheduler.alphas, t, x_t)) / (
-            1 - extract(self.var_scheduler.alphas_cumprod, t, x_t)
+        eps_factor = (1 - extract(self.alphas, t, x_t)) / (
+            1 - extract(self.alphas_cumprod, t, x_t)
         ).sqrt()
 
-        beta_t      = extract(self.var_scheduler.betas,           t, x_t)         # β_t
-        alpha_t     = extract(self.var_scheduler.alphas,          t, x_t)         # α_t = 1 - β_t
-        alpha_bar_t = extract(self.var_scheduler.alphas_cumprod,  t, x_t)         # \bar{α}_t
+        beta_t      = extract(self.betas,           t, x_t)         # β_t
+        alpha_t     = extract(self.alphas,          t, x_t)         # α_t = 1 - β_t
+        alpha_bar_t = extract(self.alphas_cumprod,  t, x_t)         # \bar{α}_t
         t_prev      = (t - 1).clamp(min=0)
-        alpha_bar_t_prev = extract(self.var_scheduler.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
+        alpha_bar_t_prev = extract(self.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
 
         # 1. predict noise
         eps = self.network(x_t, t)
