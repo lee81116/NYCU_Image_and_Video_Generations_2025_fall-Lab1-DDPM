@@ -144,9 +144,9 @@ class DDPMScheduler(BaseScheduler):
         alpha_bar_t_prev = extract(self.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
 
         # 1. predict noise
-        eps = self.network(x_t, t)
+
         # 2. Posterior mean
-        mean = (x_t-eps_factor*eps) / alpha_t.sqrt()
+        mean = (x_t-eps_factor*eps_theta) / alpha_t.sqrt()
         # 3. Posterior variance
         var = (1-alpha_bar_t_prev) / (1-alpha_bar_t) * beta_t
         # 4. Reverse step
