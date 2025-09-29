@@ -16,6 +16,9 @@ from torchvision.transforms.functional import to_pil_image
 from tqdm import tqdm
 from PIL import Image
 
+DRIVE_RESULTS_ROOT = '/content/drive/MyDrive/ddpm_results'
+Path(DRIVE_RESULTS_ROOT).mkdir(parents=True, exist_ok=True)
+
 matplotlib.use("Agg")
 
 # === add near the imports ===
@@ -64,11 +67,11 @@ def main(args):
     now = get_current_time()
     if args.use_cfg:
         save_dir = Path(
-            f"results/cfg_predictor_{args.predictor}/beta_{config.mode}/{now}"
+            f"{DRIVE_RESULTS_ROOT}/results/cfg_predictor_{args.predictor}/beta_{config.mode}/{now}"
         )
     else:
         save_dir = Path(
-            f"results/predictor_{args.predictor}/beta_{config.mode}/{now}"
+            f"{DRIVE_RESULTS_ROOT}/results/predictor_{args.predictor}/beta_{config.mode}/{now}"
         )
     save_dir.mkdir(exist_ok=True, parents=True)
     print(f"save_dir: {save_dir}")
