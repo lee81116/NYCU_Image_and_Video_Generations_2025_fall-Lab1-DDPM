@@ -139,14 +139,23 @@ def main(args):
                 samples = ddpm.sample(4, return_traj=False)
                 pil_images = tensor_to_pil_image(samples)
                 for i, img in enumerate(pil_images):
-                    img.save(save_dir / f"step={step}-{i}.png")
+                    try:
+                        img.save(save_dir / f"step={step}-{i}.png")
+                    except Exception as e:
+                        print(f"WARNING: Failed to save checkpoint/images at step {step}. Error: {e}") 
+                        pass
 
                 # traj fig
                 traj = ddpm.sample(1, return_traj=True)  # traj
-                save_traj_strip(save_dir / f"step={step}-traj.png", traj, num_frames=10, pad=4)                            
+                try:
+                    save_traj_strip(save_dir / f"step={step}-traj.png", traj, num_frames=10, pad=4)
+                    ddpm.save(f"{save_dir}/last.ckpt")
+                except Exception as e:
+                        print(f"WARNING: Failed to save checkpoint/images at step {step}. Error: {e}") 
+                        pass                            
                             
-                ddpm.save(f"{save_dir}/last.ckpt")
                 ddpm.train()
+                torch.cuda.empty_cache()
 
             img, label = next(train_it)
             img, label = img.to(config.device), label.to(config.device)
