@@ -41,14 +41,12 @@ class BaseScheduler(nn.Module):
             #       beta_t = 1 - alphā_t / alphā_{t-1}
             # 3. Return betas as a tensor of shape [num_train_timesteps].
             s = 0.008
-            timesteps = torch.arange(num_train_timesteps, dtype=torch.float64)
-            t = timesteps / num_train_timesteps + s / (1 + s)
-            angles = t * (torch.pi/2)
-            alpha_bar_t = torch.cos(angles) ** 2
-            alpha_bar_t = alpha_bar_t / alpha_bar_t[0]
-            alphas = alpha_bar_t / torch.cat([torch.tensor([1.0], dtype=torch.float64), alpha_bar_t[:-1]])
-            betas = 1 - alphas
-            betas = betas.clamp(1e-8, 0.999).to(torch.float32)
+            T = num_train_timesteps
+            t = torch.linspace(0, T, steps=T + 1, dtype=torch.float32) / T
+            alpha_bar = torch.cos(((t + s) / (1 + s)) * (torch.pi / 2)) ** 2
+            alpha_bar = alpha_bar / alpha_bar[0]
+            betas = 1.0 - (alpha_bar[1:] / alpha_bar[:-1])
+            betas = betas.clamp(1e-8, 0.999)
             #######################
         else:
             raise NotImplementedError(f"{mode} is not implemented.")
@@ -143,16 +141,16 @@ class DDPMScheduler(BaseScheduler):
         t_prev      = (t - 1).clamp(min=0)
         alpha_bar_t_prev = extract(self.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
 
-
-        # 1. predict noise
-
-        # 2. Posterior mean
+        # Posterior mean
         mean = (x_t-eps_factor*eps_theta) / alpha_t.sqrt()
-        # 3. Posterior variance
-        var = (1-alpha_bar_t_prev) / (1-alpha_bar_t) * beta_t
-        # 4. Reverse step
-        z = torch.randn_like(x_t)
-        sample_prev = mean + var.sqrt()*z
+        # Posterior variance
+        var = (1.0-alpha_bar_t_prev) / (1.0-alpha_bar_t) * beta_t
+        # Reverse step
+        if t > 0:
+            z = torch.randn_like(x_t)
+            sample_prev = mean + var.sqrt()*z
+        else:
+            sample_prev = mean
         #######################
         return sample_prev
 
