@@ -214,7 +214,7 @@ class DDPMScheduler(BaseScheduler):
         alpha_bar_t_prev = extract(self.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
         
         if t > 0:
-            var = (1-alpha_bar_t_prev) / (1-alpha_bar_t) * beta_t
+            var = (1.0-alpha_bar_t_prev) / (1.0-alpha_bar_t) * beta_t
             z = torch.randn_like(x_t)
             sample_prev = mean_theta + var.sqrt()*z
         else:
