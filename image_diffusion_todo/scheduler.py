@@ -48,7 +48,8 @@ class BaseScheduler(nn.Module):
                 t1 = i / num_train_timesteps
                 t2 = (i + 1) / num_train_timesteps
                 betas.append(1.0 - fn(t2) / fn(t1))
-            betas = torch.tensor(betas, dtype=torch.float32).clamp_max(beta_T)
+            # Set the upper bound (Finally found out.)
+            betas = torch.tensor(betas, dtype=torch.float32).clamp_max(beta_T) 
             #######################
         else:
             raise NotImplementedError(f"{mode} is not implemented.")
