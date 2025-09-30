@@ -42,10 +42,11 @@ class BaseScheduler(nn.Module):
             # 3. Return betas as a tensor of shape [num_train_timesteps].
             s = 0.008
             timesteps = torch.linspace(0, num_train_timesteps, num_train_timesteps+1)
-            angles = ((timesteps/num_train_timesteps)+s) / (1+s)*(torch.pi/2)
-            alphas_cumprod = torch.cos(angles) ** 2
-            alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
-            betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
+            angles = ((timesteps/num_train_timesteps)+s) / (1+s) * (torch.pi/2)
+            alpha_bar_t = torch.cos(angles) ** 2
+            alpha_bar_t = alpha_bar_t / alpha_bar_t[0]
+            betas = 1 - (alpha_bar_t[1:] / alpha_bar_t[:-1])
+            betas = betas.clamp(1e-8, 0.999)
             #######################
         else:
             raise NotImplementedError(f"{mode} is not implemented.")
