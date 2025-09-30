@@ -41,11 +41,13 @@ class BaseScheduler(nn.Module):
             #       beta_t = 1 - alphā_t / alphā_{t-1}
             # 3. Return betas as a tensor of shape [num_train_timesteps].
             s = 0.008
-            timesteps = torch.arange(0, num_train_timesteps + 1, dtype=torch.float64)
-            angles = ((timesteps/num_train_timesteps)+s) / (1+s) * (torch.pi/2)
+            timesteps = torch.arange(num_train_timesteps, dtype=torch.float64)
+            t = timesteps / num_train_timesteps + s / (1 + s)
+            angles = t * (torch.pi/2)
             alpha_bar_t = torch.cos(angles) ** 2
             alpha_bar_t = alpha_bar_t / alpha_bar_t[0]
-            betas = 1 - (alpha_bar_t[1:] / alpha_bar_t[:-1])
+            alphas = alpha_bar_t / torch.cat([torch.tensor([1.0], dtype=torch.float64), alpha_bar_t[:-1]])
+            betas = 1 - alphas
             betas = betas.clamp(1e-8, 0.999).to(torch.float32)
             #######################
         else:
@@ -140,6 +142,7 @@ class DDPMScheduler(BaseScheduler):
         alpha_bar_t = extract(self.alphas_cumprod,  t, x_t)         # \bar{α}_t
         t_prev      = (t - 1).clamp(min=0)
         alpha_bar_t_prev = extract(self.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
+
 
         # 1. predict noise
 
