@@ -179,12 +179,12 @@ class DDPMScheduler(BaseScheduler):
         t_prev      = (t - 1).clamp(min=0)
         alpha_bar_t_prev = extract(self.alphas_cumprod, t_prev, x_t) # \bar{α}_{t-1}
 
-        x_t_factor = alpha_t.sqrt() * (1-alpha_bar_t_prev) / (1-alpha_bar_t).sqrt()
-        x0_pred_factor = alpha_bar_t_prev.sqrt() * beta_t / (1-alpha_bar_t).sqrt()
+        x_t_factor = alpha_t.sqrt() * (1-alpha_bar_t_prev) / (1-alpha_bar_t)
+        x0_pred_factor = alpha_bar_t_prev.sqrt() * beta_t / (1-alpha_bar_t)
 
         mean = x_t_factor*x_t + x0_pred_factor*x0_pred
         if t > 0:
-            var = (1-alpha_bar_t_prev) / (1-alpha_bar_t) * beta_t
+            var = (1.0-alpha_bar_t_prev) / (1.0-alpha_bar_t) * beta_t
             z = torch.randn_like(x_t)
             sample_prev = mean + var.sqrt()*z
         else:
