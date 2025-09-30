@@ -3,6 +3,7 @@ from typing import Optional, Union
 import numpy as np
 import torch
 import torch.nn as nn
+import math 
 
 def extract(input, t: torch.Tensor, x: torch.Tensor):
     if t.ndim == 0:
@@ -41,13 +42,13 @@ class BaseScheduler(nn.Module):
             #       beta_t = 1 - alphā_t / alphā_{t-1}
             # 3. Return betas as a tensor of shape [num_train_timesteps].
             s = 0.008
-            timesteps = torch.arange(num_train_timesteps+1, dtype=torch.float64)
-            t = (timesteps/num_train_timesteps + s) / (1+s)
-            angles = t * (torch.pi/2)
-            alpha_bar_t = torch.cos(angles) ** 2
-            alpha_bar_t = alpha_bar_t / alpha_bar_t[0]
-            betas = 1 - (alpha_bar_t[1:] / alpha_bar_t[:-1])
-            betas = betas.clamp(1e-8, 0.999).to(torch.float32)
+            fn = lambda t: math.cos((t + s) / (1 + s) * math.pi / 2) ** 2
+            betas = []
+            for i in range(num_train_timesteps):
+                t1 = i / num_train_timesteps
+                t2 = (i + 1) / num_train_timesteps
+                betas.append(1.0 - fn(t2) / fn(t1))
+            return torch.tensor(betas, dtype=torch.float32).clamp_max(beta_T)
             #######################
         else:
             raise NotImplementedError(f"{mode} is not implemented.")
