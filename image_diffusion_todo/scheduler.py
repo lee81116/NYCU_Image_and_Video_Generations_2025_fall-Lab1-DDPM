@@ -40,13 +40,12 @@ class BaseScheduler(nn.Module):
             # 2. Convert alphā_t into betas using:
             #       beta_t = 1 - alphā_t / alphā_{t-1}
             # 3. Return betas as a tensor of shape [num_train_timesteps].
-            fn = lambda t: torch.cos((t + s) / (1 + s) * torch.pi / 2) ** 2
             s = 0.008
-            betas = []
-            for i in range(num_train_timesteps):
-                t1 = i / num_train_timesteps
-                t2 = (i + 1) / num_train_timesteps
-                betas.append(1.0 - fn(t2) / fn(t1))
+            timesteps = torch.arange(0, num_train_timesteps + 1, dtype=torch.float64)
+            angles = ((timesteps/num_train_timesteps)+s) / (1+s) * (torch.pi/2)
+            alpha_bar_t = torch.cos(angles) ** 2
+            alpha_bar_t = alpha_bar_t / alpha_bar_t[0]
+            betas = 1 - (alpha_bar_t[1:] / alpha_bar_t[:-1])
             betas = betas.clamp(1e-8, 0.999).to(torch.float32)
             #######################
         else:
